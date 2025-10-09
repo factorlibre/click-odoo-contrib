@@ -49,11 +49,12 @@ def export_pot(
     files_to_commit = set()
 
     files_to_commit.add(pot_filepath)
-    with open(pot_filepath, "w", encoding="utf-8") as pot_file:
-        file_content = base64.b64decode(lang_export.data).decode("utf-8")
-        for pattern in LINE_PATTERNS_TO_REMOVE:
-            file_content = re.sub(pattern, "", file_content, flags=re.MULTILINE)
-        pot_file.write(file_content)
+    if lang_export.data:
+        with open(pot_filepath, "w", encoding="utf-8") as pot_file:
+            file_content = base64.b64decode(lang_export.data).decode("utf-8")
+            for pattern in LINE_PATTERNS_TO_REMOVE:
+                file_content = re.sub(pattern, "", file_content, flags=re.MULTILINE)
+            pot_file.write(file_content)
 
     invalid_po = 0
     for lang_filename in os.listdir(i18n_path):
