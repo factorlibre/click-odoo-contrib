@@ -59,7 +59,15 @@ def _patch_ir_attachment_store(force_db_storage):
             IrAttachment._storage = orig
 
 
-def odoo_createdb(dbname, demo, module_names, force_db_storage, exists):
+def odoo_createdb(
+    dbname,
+    demo,
+    module_names,
+    force_db_storage,
+    exists,
+    *,
+    force_db_storage_persistent=False,
+):
     with _patch_ir_attachment_store(force_db_storage):
         if not exists:
             odoo.service.db._create_empty_database(dbname)
@@ -89,6 +97,15 @@ def odoo_createdb(dbname, demo, module_names, force_db_storage, exists):
             )
         with odoo.sql_db.db_connect(dbname).cursor() as cr:
             _save_installed_checksums(cr)
+            if force_db_storage_persistent:
+                cr.execute(
+                    """
+                    INSERT INTO ir_config_parameter (key, value)
+                    VALUES (%s, %s)
+                    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value
+                    """,
+                    ("ir_attachment.location", "db"),
+                )
         odoo.sql_db.close_db(dbname)
 
 
@@ -369,6 +386,15 @@ class DbCache:
     ),
 )
 @click.option(
+    "--attachments-in-db-persistent",
+    is_flag=True,
+    help=(
+        "After initializing the database, set the `ir_attachement.location` system "
+        "parameter to 'db' so that all future attachments are stored in the database. "
+        "Implies --attachments-in-db."
+    ),
+)
+@click.option(
     "--unless-exists",
     is_flag=True,
     help=(
@@ -396,6 +422,7 @@ def main(
     unless_exists,
     unless_initialized,
     attachments_in_db,
+    attachments_in_db_persistent,
 ):
     """Create or initialize an Odoo database with pre-installed modules.
 
@@ -451,7 +478,8 @@ def main(
                 new_database,
                 demo,
                 module_names,
-                force_db_storage=attachments_in_db,
+                force_db_storage=attachments_in_db or attachments_in_db_persistent,
+                force_db_storage_persistent=attachments_in_db_persistent,
                 exists=exists,
             )
         else:
@@ -478,6 +506,7 @@ def main(
                         demo,
                         module_names,
                         force_db_storage=True,
+                        force_db_storage_persistent=attachments_in_db_persistent,
                         exists=exists,
                     )
                     dbcache.add(new_database, hashsum)
