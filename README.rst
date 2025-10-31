@@ -88,37 +88,47 @@ click-odoo-initdb (stable)
     Odoo in the existing database.
 
   Options:
-    -c, --config FILE         ...
+    -c, --config FILE               ...
     ...
-    -n, --new-database TEXT   Name of new database to create, possibly from
-                              cache. If absent, only the cache trimming
-                              operation is executed.
-    -m, --modules TEXT        Comma separated list of addons to install.
-                              [default: base]
-    --demo / --no-demo        Load Odoo demo data.  [default: demo]
-    --cache / --no-cache      Use a cache of database templates with the exact
-                              same addons installed. Disabling this option also
-                              disables all other cache-related operations such
-                              as max-age or size. Note: enabling the cache
-                              implies --attachements-in-db.  [default: cache]
-    --cache-prefix TEXT       Prefix to use when naming cache template databases
-                              (max 8 characters). CAUTION: all databases named
-                              like {prefix}-____________-% will eventually be
-                              dropped by the cache control mechanism, so choose
-                              the prefix wisely.  [default: cache]
-    --cache-max-age INTEGER   Drop cache templates that have not been used for
-                              more than N days. Use -1 to disable.  [default:
-                              30]
-    --cache-max-size INTEGER  Keep N most recently used cache templates. Use -1
-                              to disable. Use 0 to empty cache.  [default: 5]
-    --attachments-in-db TEXT  Store attachements created during database
-                              initialization in the database instead of the
-                              default file store.
-    --unless-exists           If database exists, do nothing and exit without
-                              error, else create and initialize it.
-    --unless-initialized      If database exists and is initialized, do nothing
-                              and exit without error, else create and/or initialize it.
-    --help                    Show this message and exit.
+    -n, --new-database TEXT         Name of new database to create, possibly
+                                    from cache. If absent, only the cache
+                                    trimming operation is executed.
+    -m, --modules TEXT              Comma separated list of addons to install.
+                                    [default: base]
+    --demo / --no-demo              Load Odoo demo data.  [default: demo]
+    --cache / --no-cache            Use a cache of database templates with the
+                                    exact same addons installed. Disabling this
+                                    option also disables all other cache-related
+                                    operations such as max-age or size. Note:
+                                    enabling the cache implies --attachements-
+                                    in-db.  [default: cache]
+    --cache-prefix TEXT             Prefix to use when naming cache template
+                                    databases (max 8 characters). CAUTION: all
+                                    databases named like {prefix}-____________-%
+                                    will eventually be dropped by the cache
+                                    control mechanism, so choose the prefix
+                                    wisely.  [default: cache]
+    --cache-max-age INTEGER         Drop cache templates that have not been used
+                                    for more than N days. Use -1 to disable.
+                                    [default: 30]
+    --cache-max-size INTEGER        Keep N most recently used cache templates.
+                                    Use -1 to disable. Use 0 to empty cache.
+                                    [default: 5]
+    --attachments-in-db             Store attachements created during database
+                                    initialization in the database instead of
+                                    the default file store.
+    --attachments-in-db-persistent  After initializing the database, set the
+                                    `ir_attachement.location` system parameter
+                                    to 'db' so that all future attachments are
+                                    stored in the database. Implies
+                                    --attachments-in-db.
+    --unless-exists                 If database exists, do nothing and exit
+                                    without error, else create and initialize
+                                    it.
+    --unless-initialized            If database exists and is initialized, do
+                                    nothing and exit without error, else create
+                                    and/or initialize it.
+    --help                          Show this message and exit.
 
 click-odoo-backupdb (beta)
 --------------------------

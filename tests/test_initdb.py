@@ -235,7 +235,7 @@ def test_create_cmd_cache(dbcache, tmpdir):
                 """
                 SELECT COUNT(*) FROM ir_attachment
                 WHERE store_fname IS NOT NULL
-            """
+                """
             )
             assert env.cr.fetchone()[0] == 0, "some attachments are not stored in db"
     finally:
@@ -364,7 +364,7 @@ def test_attachments_in_db_default(pgdb):
             """
             SELECT COUNT(*) FROM ir_attachment
             WHERE store_fname IS NOT NULL
-        """
+            """
         )
         assert env.cr.fetchone()[0] != 0, "all attachments are stored in db"
 
@@ -380,6 +380,47 @@ def test_attachments_in_db(pgdb):
             """
             SELECT COUNT(*) FROM ir_attachment
             WHERE store_fname IS NOT NULL
-        """
+            """
         )
         assert env.cr.fetchone()[0] == 0, "some attachments are not stored in db"
+        env.cr.execute(
+            """
+            SELECT COUNT(*) FROM ir_config_parameter
+            WHERE key = 'ir_attachment.location'
+            """
+        )
+        assert env.cr.fetchone()[0] == 0, (
+            "ir_attachment.location config parameter should not be set"
+        )
+
+
+def test_attachments_in_db_persistent(pgdb):
+    """Initializing a database with --attachments-in-db does not use the file store."""
+    result = CliRunner().invoke(
+        main,
+        [
+            "-n",
+            pgdb,
+            "--no-cache",
+            "--unless-initialized",
+            "--attachments-in-db-persistent",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    with click_odoo.OdooEnvironment(database=pgdb) as env:
+        env.cr.execute(
+            """
+            SELECT COUNT(*) FROM ir_attachment
+            WHERE store_fname IS NOT NULL
+            """
+        )
+        assert env.cr.fetchone()[0] == 0, "some attachments are not stored in db"
+        env.cr.execute(
+            """
+            SELECT value FROM ir_config_parameter
+            WHERE key = 'ir_attachment.location'
+            """
+        )
+        assert env.cr.fetchone()[0] == "db", (
+            "ir_attachment.location config parameter not set to 'db'"
+        )
