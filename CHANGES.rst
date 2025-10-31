@@ -3,6 +3,15 @@ Changes
 
 .. towncrier release notes start
 
+1.23 (2025-10-31)
+-----------------
+
+**Features**
+
+- click-odoo-initdb: add ``--attachments-in-db-persistent`` option, to set
+  the `ir_attachment.location=db` system parameter. (`#175 <https://github.com/acsone/click-odoo-contrib/issues/175>`_)
+
+
 1.22 (2025-09-29)
 -----------------
 
