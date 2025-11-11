@@ -3,6 +3,14 @@ Changes
 
 .. towncrier release notes start
 
+1.23.1 (2025-11-11)
+-------------------
+
+**Bugfixes**
+
+- click-odoo-makepot: support modules with no translatable terms in Odoo 19. (`#421 <https://github.com/acsone/click-odoo-contrib/issues/421>`_)
+
+
 1.23 (2025-10-31)
 -----------------
 
