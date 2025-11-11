@@ -5,7 +5,10 @@ import os
 import shutil
 import subprocess
 
+import pytest
+
 import click_odoo
+from click_odoo import odoo
 from .compat import CliRunner
 
 from click_odoo_contrib.makepot import main
@@ -367,6 +370,9 @@ def test_makepot_detect_bad_po(odoodb, odoocfg, capfd):
     assert "msgmerge: found 1 fatal error" in capture.err
 
 
+@pytest.mark.skipif(
+    odoo.release.version_info < (19, 0), reason="Only Odoo 19 generates empty .pot"
+)
 def test_makepot_no_translations(odoodb, odoocfg, tmp_path):
     # create a test addon without translations
     addon_name = "addon_test_makepot_no_trans"
