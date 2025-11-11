@@ -5,7 +5,10 @@ import os
 import shutil
 import subprocess
 
+import pytest
+
 import click_odoo
+from click_odoo import odoo
 from .compat import CliRunner
 
 from click_odoo_contrib.makepot import main
@@ -365,3 +368,56 @@ def test_makepot_detect_bad_po(odoodb, odoocfg, capfd):
     capture = capfd.readouterr()
     assert "duplicate message definition" in capture.err
     assert "msgmerge: found 1 fatal error" in capture.err
+
+
+@pytest.mark.skipif(
+    odoo.release.version_info < (19, 0), reason="Only Odoo 19 generates empty .pot"
+)
+def test_makepot_no_translations(odoodb, odoocfg, tmp_path):
+    # create a test addon without translations
+    addon_name = "addon_test_makepot_no_trans"
+    addons_dir = tmp_path / "addons"
+    addon_dir = addons_dir / addon_name
+    i18n_dir = addon_dir / "i18n"
+    pot_file = i18n_dir / (addon_name + ".pot")
+    addon_dir.mkdir(parents=True)
+    addon_dir.joinpath("__init__.py").write_text("")
+    addon_dir.joinpath("__manifest__.py").write_text("{'name': 'test addon'}")
+    # install test addon
+    subprocess.check_call(
+        [
+            click_odoo.odoo_bin,
+            "-d",
+            odoodb,
+            "-c",
+            str(odoocfg),
+            "-i",
+            addon_name,
+            "--addons-path",
+            addons_dir,
+            "--stop-after-init",
+        ]
+    )
+    # export translations and check that no i18n content is created
+    result = CliRunner().invoke(
+        main, ["-d", odoodb, "-c", str(odoocfg), "--addons-dir", addons_dir]
+    )
+    assert result.exit_code == 0
+    assert not list(i18n_dir.iterdir())
+    # create a .pot file and chech that it is removed
+    pot_file.touch()
+    result = CliRunner().invoke(
+        main, ["-d", odoodb, "-c", str(odoocfg), "--addons-dir", addons_dir]
+    )
+    assert result.exit_code == 0
+    assert not pot_file.exists()
+    assert not list(i18n_dir.iterdir())
+    # create a .po file and check that an empty .pot file is created
+    po_file = i18n_dir / "fr.po"
+    po_file.touch()
+    result = CliRunner().invoke(
+        main, ["-d", odoodb, "-c", str(odoocfg), "--addons-dir", addons_dir]
+    )
+    assert result.exit_code == 0
+    assert pot_file.exists()
+    assert pot_file.read_text() == "# No translations.\n"

@@ -68,6 +68,16 @@ def install_odoo():
                 "setuptools<58",
             ]
         )
+    if odoo_branch in ["14.0", "15.0", "16.0", "17.0"]:
+        # Odoo < 18 needs pkg_resources, to make sure setuptools (which provides
+        # pkg_resources) is installed in the venv
+        subprocess.check_call(
+            [
+                "pip",
+                "install",
+                "setuptools",
+            ]
+        )
     with odoo_requirements(odoo_branch) as requirements:
         subprocess.check_call(["pip", "install", *requirements])
     odoo_install_cmd = ["pip", "install", "-e", odoo_dir]
