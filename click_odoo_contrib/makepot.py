@@ -2,6 +2,7 @@
 # License LGPL-3.0 or later (http://www.gnu.org/licenses/lgpl.html).
 
 import base64
+import glob
 import os
 import re
 import subprocess
@@ -48,13 +49,27 @@ def export_pot(
 
     files_to_commit = set()
 
-    files_to_commit.add(pot_filepath)
     if lang_export.data:
+        files_to_commit.add(pot_filepath)
         with open(pot_filepath, "w", encoding="utf-8") as pot_file:
             file_content = base64.b64decode(lang_export.data).decode("utf-8")
             for pattern in LINE_PATTERNS_TO_REMOVE:
                 file_content = re.sub(pattern, "", file_content, flags=re.MULTILINE)
             pot_file.write(file_content)
+    else:
+        has_po_files = glob.glob(os.path.join(i18n_path, "*" + PO_FILE_EXT))
+        if has_po_files:
+            # If there are existing .po files, we create an empty .pot file
+            # so msgmerge can still be run to purge obsolete translations.
+            files_to_commit.add(pot_filepath)
+            with open(pot_filepath, "w", encoding="utf-8") as pot_file:
+                pot_file.write("# No translations.\n")
+        else:
+            # If there are no .po files, and no translations to export,
+            # we remove the .pot file if it exists.
+            if os.path.exists(pot_filepath):
+                files_to_commit.add(pot_filepath)
+                os.remove(pot_filepath)
 
     invalid_po = 0
     for lang_filename in os.listdir(i18n_path):
